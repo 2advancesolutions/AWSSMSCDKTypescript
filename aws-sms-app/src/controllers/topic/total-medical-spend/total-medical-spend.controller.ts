@@ -10,6 +10,7 @@ export class TotalMedicalSpendController {
   async create(@Body() req: any) {
 
     console.log("TotalMedicalSpendController.create: " + JSON.stringify(req));
+   
     try {
       const subscription = await this._totalMedicalSpendService.subscribeToTopic(req.email);
       return subscription;
@@ -17,5 +18,6 @@ export class TotalMedicalSpendController {
       throw new HttpException('Failed to send email', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
 }
 
