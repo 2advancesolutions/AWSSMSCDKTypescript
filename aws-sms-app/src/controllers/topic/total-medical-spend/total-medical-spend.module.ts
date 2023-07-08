@@ -4,6 +4,7 @@ import { TotalMedicalSpendController } from './total-medical-spend.controller';
 
 @Module({
   controllers: [TotalMedicalSpendController],
-  providers: [TotalMedicalSpendService]
+  providers: [TotalMedicalSpendService],
+  exports: [TotalMedicalSpendService]
 })
 export class TotalMedicalSpendModule {}

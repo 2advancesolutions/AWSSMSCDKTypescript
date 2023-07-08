@@ -1,38 +1,43 @@
-import { Injectable } from '@nestjs/common';
-import { CreateTotalMedicalSpendDto } from './dto/create-total-medical-spend.dto';
-import { UpdateTotalMedicalSpendDto } from './dto/update-total-medical-spend.dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
+import * as AWS from 'aws-sdk';
 
-//import { AWS } from 'aws-sdk';
-
-//const creds = new AWS.SharedInifileCredentials({profile: 'default'});
-//const sns = new AWS.SNS({apiVersion: '2010-03-31', credentials: creds, region: 'us-east-1'});
+interface SubscribeRequest {
+  email: string;
+}
 
 @Injectable()
 export class TotalMedicalSpendService {
- 
-  create(req: any, res: any) {
-    let params = {
-      Protocol: 'EMAIL', /* required */
-      TopicArn: 'arn:aws:sns:us-east-1:471353349456:ProvidersPMPMTotalSpend', /* required */
-                 
-      Endpoint: req.body.email
+
+  private sns: AWS.SNS;
+
+  constructor() {
+    // TODO: move logic to config file
+    this.sns = new AWS.SNS({
+      accessKeyId: 'AKIAW3PWZKVIPU3YXW53',
+      secretAccessKey: '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',
+      region: 'us-east-1'
+    });
+  }
+
+  async subscribeToTopic(email: string) {
+
+    // TODO: move logic to config file
+    const topicArn = 'arn:aws:sns:us-east-1:471353349456:ProvidersPMPMTotalSpend';
+
+    const params = {
+      Protocol: 'email',
+      TopicArn: topicArn,
+      Endpoint: email
     }
-    return 'This action adds a new totalMedicalSpend';
+
+    try {
+      const subscription = await this.sns.subscribe(params).promise();
+      return subscription;
+    } catch (error) {
+      console.error(`Failed to subscribe to topic ${topicArn} with email ${email}`, error);
+      throw new HttpException('Failed to subscribe to SNS Topic', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  findAll() {
-    return `This action returns all totalMedicalSpend`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} totalMedicalSpend`;
-  }
-
-  update(id: number, updateTotalMedicalSpendDto: UpdateTotalMedicalSpendDto) {
-    return `This action updates a #${id} totalMedicalSpend`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} totalMedicalSpend`;
-  }
 }

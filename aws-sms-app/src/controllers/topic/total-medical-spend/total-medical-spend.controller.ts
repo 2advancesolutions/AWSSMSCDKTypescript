@@ -1,41 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller,Post, Body, HttpException, HttpStatus} from '@nestjs/common';
 import { TotalMedicalSpendService } from './total-medical-spend.service';
-import { CreateTotalMedicalSpendDto } from './dto/create-total-medical-spend.dto';
-import { UpdateTotalMedicalSpendDto } from './dto/update-total-medical-spend.dto';
 
 @Controller('totalmedicalspend')
 export class TotalMedicalSpendController {
-  constructor(private readonly totalMedicalSpendService: TotalMedicalSpendService) {}
+  
+  constructor(private readonly _totalMedicalSpendService: TotalMedicalSpendService) {}
 
   @Post()
-  create(@Body() email: string) {
+  async create(@Body() req: any) {
 
-     let params = {
-      Protocol: 'EMAIL', 
-      TopicArn: 'arn:aws:sns:us-east-1:471353349456:ProvidersPMPMTotalSpend',       
-      Endpoint: email
+    console.log("TotalMedicalSpendController.create: " + JSON.stringify(req));
+    try {
+      const subscription = await this._totalMedicalSpendService.subscribeToTopic(req.email);
+      return subscription;
+    } catch (error) {
+      throw new HttpException('Failed to send email', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return params;
-  //  return this.totalMedicalSpendService.create(createTotalMedicalSpendDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.totalMedicalSpendService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.totalMedicalSpendService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTotalMedicalSpendDto: UpdateTotalMedicalSpendDto) {
-    return this.totalMedicalSpendService.update(+id, updateTotalMedicalSpendDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.totalMedicalSpendService.remove(+id);
   }
 }
+
